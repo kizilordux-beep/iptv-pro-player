@@ -5,8 +5,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.iptvpro.player.ui.theme.NetflixRed
 import com.iptvpro.player.viewmodel.PlayerViewModel
 
 @Composable
@@ -34,8 +36,11 @@ fun MainScreen(
                     .align(Alignment.TopEnd)
                     .padding(16.dp)
             ) {
-                Button(onClick = { showDialog = true }) {
-                    Text("Kaynak Yönetimi (M3U Ekle)")
+                Button(
+                    onClick = { showDialog = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = NetflixRed)
+                ) {
+                    Text("Kaynak Ekle (M3U / JSON)", color = Color.White)
                 }
             }
 
@@ -49,15 +54,16 @@ fun MainScreen(
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
-                    title = { Text("Kaynak Ekle") },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    title = { Text("Kaynak Yöneticisi", color = Color.White) },
                     text = {
                         Column {
-                            Text("M3U Playlist URL adresini girin:")
+                            Text("M3U veya Manifest JSON URL girin:", color = MaterialTheme.colorScheme.onSurfaceVariant)
                             Spacer(modifier = Modifier.height(8.dp))
                             OutlinedTextField(
                                 value = urlText,
                                 onValueChange = { urlText = it },
-                                label = { Text("M3U URL") },
+                                label = { Text("Playlist / Manifest URL") },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth()
                             )
@@ -70,14 +76,15 @@ fun MainScreen(
                                     viewModel.loadPlaylistFromUrl(urlText)
                                     showDialog = false
                                 }
-                            }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = NetflixRed)
                         ) {
-                            Text("Yükle")
+                            Text("Yükle", color = Color.White)
                         }
                     },
                     dismissButton = {
                         TextButton(onClick = { showDialog = false }) {
-                            Text("İptal")
+                            Text("İptal", color = Color.Gray)
                         }
                     }
                 )
