@@ -1,32 +1,31 @@
 package com.iptvpro.player.theme
-import androidx.compose.material3.*
+
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-val CrimsonRed = Color(0xFFDC143C)
-val DarkRed = Color(0xFF8B0000)
-val DeepBlack = Color(0xFF0A0A0A)
-val SurfaceBlack = Color(0xFF1A1A1A)
-val CardBlack = Color(0xFF252525)
-val DimWhite = Color(0xFFE0E0E0)
-val BrightWhite = Color(0xFFFFFFFF)
-val AccentRed = Color(0xFFFF4444)
-val SubtleGray = Color(0xFF888888)
-val DarkGray = Color(0xFF333333)
-val EpgNow = Color(0xFF00C853)
-val EpgNext = Color(0xFFFFAB00)
+val NetflixRed = Color(0xFFE50914)
+val NetflixDarkBackground = Color(0xFF141414)
+val NetflixCardSurface = Color(0xFF1F1F1F)
+val NetflixTextWhite = Color(0xFFFFFFFF)
+val NetflixTextGray = Color(0xFFB3B3B3)
 
-private val Scheme = darkColorScheme(
-    primary = CrimsonRed, onPrimary = BrightWhite,
-    primaryContainer = DarkRed, onPrimaryContainer = BrightWhite,
-    secondary = AccentRed, onSecondary = BrightWhite,
-    background = DeepBlack, onBackground = DimWhite,
-    surface = SurfaceBlack, onSurface = DimWhite,
-    surfaceVariant = CardBlack, onSurfaceVariant = SubtleGray,
-    outline = DarkGray, error = Color(0xFFFF6B6B)
+private val DarkColorScheme = darkColorScheme(
+    primary = NetflixRed,
+    onPrimary = Color.White,
+    background = NetflixDarkBackground,
+    onBackground = NetflixTextWhite,
+    surface = NetflixCardSurface,
+    onSurface = NetflixTextWhite,
+    surfaceVariant = Color(0xFF2B2B2B),
+    onSurfaceVariant = NetflixTextGray
 )
 
 @Composable
 fun IPTVProTheme(content: @Composable () -> Unit) {
-    MaterialTheme(colorScheme = Scheme, content = content)
+    MaterialTheme(
+        colorScheme = DarkColorScheme,
+        content = content
+    )
 }

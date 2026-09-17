@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.iptvpro.player.ui.theme.NetflixRed
+import com.iptvpro.player.theme.NetflixRed
 import com.iptvpro.player.viewmodel.PlayerViewModel
 
 @Composable
