@@ -35,7 +35,7 @@ fun MainScreen(
                     .padding(16.dp)
             ) {
                 Button(onClick = { showDialog = true }) {
-                    Text("Kaynak Ekle (M3U)")
+                    Text("Kaynak Yönetimi (M3U Ekle)")
                 }
             }
 
@@ -49,15 +49,19 @@ fun MainScreen(
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
-                    title = { Text("M3U Playlist URL Girin") },
+                    title = { Text("Kaynak Ekle") },
                     text = {
-                        OutlinedTextField(
-                            value = urlText,
-                            onValueChange = { urlText = it },
-                            label = { Text("Playlist URL (http/https)") },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth()
-                        )
+                        Column {
+                            Text("M3U Playlist URL adresini girin:")
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedTextField(
+                                value = urlText,
+                                onValueChange = { urlText = it },
+                                label = { Text("M3U URL") },
+                                singleLine = true,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        }
                     },
                     confirmButton = {
                         Button(
