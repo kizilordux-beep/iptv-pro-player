@@ -18,19 +18,48 @@ fun MainScreen(
 ) {
     var urlText by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
+    val currentChannel by viewModel.currentChannel.collectAsState()
 
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Row(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                // ExoPlayer Video Alanı
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                ) {
+                    currentChannel?.let { channel ->
+                        if (channel.url.isNotEmpty()) {
+                            VideoPlayer(
+                                url = channel.url,
+                                modifier = Modifier.fillMaxSize()
+                            )
+                        }
+                    } ?: Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Lütfen Oynatmak İçin Bir Kanal Seçin",
+                            color = Color.White
+                        )
+                    }
+                }
+
+                // Kanal Listesi Paneli
                 ChannelListPanel(
                     viewModel = viewModel,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
                 )
             }
 
+            // Kaynak Yönetimi Butonu
             Column(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -44,13 +73,7 @@ fun MainScreen(
                 }
             }
 
-            BottomInfoPanel(
-                viewModel = viewModel,
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
-            )
-
+            // M3U / Manifest Dialog
             if (showDialog) {
                 AlertDialog(
                     onDismissRequest = { showDialog = false },
