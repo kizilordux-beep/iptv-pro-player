@@ -27,7 +27,7 @@ fun MainScreen(
                 viewModel = viewModel
             )
 
-            // Sol Taraf: Kanal Listesi Overlay
+            // Sol Taraf: Kanal Listesi
             Row(modifier = Modifier.fillMaxSize()) {
                 ChannelList(
                     channels = channels,
