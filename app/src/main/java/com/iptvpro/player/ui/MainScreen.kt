@@ -12,36 +12,21 @@ fun MainScreen(
     modifier: Modifier = Modifier,
     viewModel: PlayerViewModel = viewModel()
 ) {
-    val channels by viewModel.channels.collectAsState()
-    val currentChannel by viewModel.currentChannel.collectAsState()
-    val isEpgOpen by viewModel.isEpgOpen.collectAsState()
-
     Surface(
         modifier = modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            VideoPlayer(
-                modifier = Modifier.fillMaxSize(),
-                viewModel = viewModel
-            )
-
             Row(modifier = Modifier.fillMaxSize()) {
-                ChannelList(
-                    channels = channels,
-                    currentChannel = currentChannel,
-                    onChannelSelect = { channel ->
-                        viewModel.playChannel(channel)
-                    },
+                ChannelListPanel(
+                    viewModel = viewModel,
                     modifier = Modifier.weight(1f)
                 )
-
-                if (isEpgOpen) {
-                    EpgPanel(
-                        modifier = Modifier
-                    )
-                }
             }
+            BottomInfoPanel(
+                viewModel = viewModel,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }
