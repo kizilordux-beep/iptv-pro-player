@@ -21,13 +21,11 @@ fun MainScreen(
         color = MaterialTheme.colorScheme.background
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            // Video Oynatıcı Paneli
             VideoPlayer(
                 modifier = Modifier.fillMaxSize(),
                 viewModel = viewModel
             )
 
-            // Sol Taraf: Kanal Listesi
             Row(modifier = Modifier.fillMaxSize()) {
                 ChannelList(
                     channels = channels,
@@ -38,7 +36,6 @@ fun MainScreen(
                     modifier = Modifier.weight(1f)
                 )
 
-                // Sağ Taraf: EPG Paneli (Açıksa gösterilir)
                 if (isEpgOpen) {
                     EpgPanel(
                         modifier = Modifier
