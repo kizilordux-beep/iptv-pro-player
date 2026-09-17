@@ -1,0 +1,32 @@
+workflows:
+  android-build:
+    name: Backdor IPTV - Android APK Build
+    max_build_duration: 30
+    instance_type: linux_x2
+    environment:
+      java: 17
+    cache:
+      cache_paths:
+        - ~/.gradle/caches
+        - ~/.gradle/wrapper
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
+      - name: Generate Gradle Wrapper
+        script: |
+          gradle wrapper --gradle-version 8.7
+          chmod +x gradlew
+      - name: Build Debug & Unsigned Release APK
+        script: |
+          ./gradlew assembleDebug --stacktrace --no-daemon
+          ./gradlew assembleRelease --stacktrace --no-daemon
+    artifacts:
+      - app/build/outputs/apk/**/*.apk
+    publishing:
+      email:
+        recipients:
+          - kizilordux@gmail.com
+        notify:
+          success: true
+          failure: true
