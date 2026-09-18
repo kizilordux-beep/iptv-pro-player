@@ -1,116 +1,134 @@
 package com.iptvpro.player.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.iptvpro.player.theme.NetflixRed
 import com.iptvpro.player.viewmodel.PlayerViewModel
+
+val TvvooRed = Color(0xFFE50914)
+val TvvooBg = Color(0xFF0D0D0D)
+val TvvooCard = Color(0xFF161616)
+val TvvooBorder = Color(0xFF2A2A2A)
 
 @Composable
 fun MainScreen(
-    modifier: Modifier = Modifier,
     viewModel: PlayerViewModel = viewModel()
 ) {
-    var urlText by remember { mutableStateOf("") }
-    var showDialog by remember { mutableStateOf(false) }
     val currentChannel by viewModel.currentChannel.collectAsState()
+    val channels by viewModel.channels.collectAsState()
+    var workersUrlInput by remember { mutableStateOf(viewModel.workersUrl.value) }
+    var manifestUrlInput by remember { mutableStateOf(viewModel.manifestUrl.value) }
 
-    Surface(
-        modifier = modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(TvvooBg)
+            .padding(12.dp)
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                // ExoPlayer Video Alanı
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                ) {
-                    currentChannel?.let { channel ->
-                        if (channel.url.isNotEmpty()) {
-                            VideoPlayer(
-                                url = channel.url,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        }
-                    } ?: Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Lütfen Oynatmak İçin Bir Kanal Seçin",
-                            color = Color.White
-                        )
-                    }
-                }
+        // Üst Başlık
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(bottom = 8.dp)) {
+            Text("▶ ", color = TvvooRed, fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Text("TVVOO", color = Color.White, fontSize = 22.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("GÜÇLÜ IPTV OYNATICI", color = TvvooRed, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        }
 
-                // Kanal Listesi Paneli
-                ChannelListPanel(
-                    viewModel = viewModel,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f)
-                )
-            }
-
-            // Kaynak Yönetimi Butonu
+        Row(modifier = Modifier.weight(1f)) {
+            // Sol Yan Panel (Özellikler & Çift Kaynak Yönetimi)
             Column(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(16.dp)
+                    .width(260.dp)
+                    .fillMaxHeight()
+                    .padding(end = 8.dp)
             ) {
-                Button(
-                    onClick = { showDialog = true },
-                    colors = ButtonDefaults.buttonColors(containerColor = NetflixRed)
+                // Kaynak Yönetimi Kutuları (Workers & Manifest)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(TvvooCard, RoundedCornerShape(8.dp))
+                        .border(1.dp, TvvooBorder, RoundedCornerShape(8.dp))
+                        .padding(8.dp)
                 ) {
-                    Text("Kaynak Ekle (M3U / JSON)", color = Color.White)
+                    Text("🌐 Workers URL", color = Color.White, fontSize = 11.sp)
+                    OutlinedTextField(
+                        value = workersUrlInput,
+                        onValueChange = { workersUrlInput = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = androidx.compose.ui.text.TextStyle(color = Color.LightGray, fontSize = 10.sp),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("🔗 Manifest URL", color = Color.White, fontSize = 11.sp)
+                    OutlinedTextField(
+                        value = manifestUrlInput,
+                        onValueChange = { manifestUrlInput = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = androidx.compose.ui.text.TextStyle(color = Color.LightGray, fontSize = 10.sp),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Button(
+                        onClick = {
+                            viewModel.workersUrl.value = workersUrlInput
+                            viewModel.manifestUrl.value = manifestUrlInput
+                            viewModel.loadDualSources()
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = TvvooRed),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Kaynakları Yenile", color = Color.White, fontSize = 11.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Kanal Listesi
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(TvvooCard, RoundedCornerShape(8.dp))
+                        .border(1.dp, TvvooBorder, RoundedCornerShape(8.dp))
+                        .padding(4.dp)
+                ) {
+                    items(channels) { ch ->
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { viewModel.selectChannel(ch) }
+                                .padding(8.dp)
+                        ) {
+                            Text(ch.name, color = if (ch == currentChannel) TvvooRed else Color.White, fontSize = 12.sp)
+                        }
+                    }
                 }
             }
 
-            // M3U / Manifest Dialog
-            if (showDialog) {
-                AlertDialog(
-                    onDismissRequest = { showDialog = false },
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    title = { Text("Kaynak Yöneticisi", color = Color.White) },
-                    text = {
-                        Column {
-                            Text("M3U veya Manifest JSON URL girin:", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Spacer(modifier = Modifier.height(8.dp))
-                            OutlinedTextField(
-                                value = urlText,
-                                onValueChange = { urlText = it },
-                                label = { Text("Playlist / Manifest URL") },
-                                singleLine = true,
-                                modifier = Modifier.fillMaxWidth()
-                            )
-                        }
-                    },
-                    confirmButton = {
-                        Button(
-                            onClick = {
-                                if (urlText.isNotBlank()) {
-                                    viewModel.loadPlaylistFromUrl(urlText)
-                                    showDialog = false
-                                }
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = NetflixRed)
-                        ) {
-                            Text("Yükle", color = Color.White)
-                        }
-                    },
-                    dismissButton = {
-                        TextButton(onClick = { showDialog = false }) {
-                            Text("İptal", color = Color.Gray)
-                        }
-                    }
-                )
+            // Sağ Video Alanı (ExoPlayer)
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .background(Color.Black, RoundedCornerShape(8.dp))
+                    .border(1.dp, TvvooBorder, RoundedCornerShape(8.dp))
+            ) {
+                currentChannel?.let { ch ->
+                    VideoPlayer(url = ch.url, modifier = Modifier.fillMaxSize())
+                } ?: Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Kanal Yükleniyor...", color = Color.Gray)
+                }
             }
         }
     }
