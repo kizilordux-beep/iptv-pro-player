@@ -17,8 +17,7 @@ data class Channel(
     val name: String = "",
     val url: String = "",
     val logo: String = "",
-    val group: String = "",
-    val isAddon: Boolean = false
+    val group: String = ""
 )
 
 enum class PState { IDLE, BUFFERING, PLAYING, ERROR }
@@ -37,31 +36,44 @@ class PlayerViewModel : ViewModel() {
     var manifestUrl = MutableStateFlow("https://tvvoo.hayd.uk/cfg-tr/manifest.json")
 
     init {
-        loadDualSources()
+        loadWorkersSource()
     }
 
-    fun loadDualSources() {
+    fun loadWorkersSource() {
         viewModelScope.launch(Dispatchers.IO) {
             _state.value = PState.BUFFERING
-            val mergedList = mutableListOf<Channel>()
-
-            // 1. Workers M3U Yükle
             try {
                 val m3uText = fetchUrlContent(workersUrl.value)
-                mergedList.addAll(parseM3u(m3uText))
-            } catch (e: Exception) { e.printStackTrace() }
+                val list = parseM3u(m3uText)
+                if (list.isNotEmpty()) {
+                    _channels.value = list
+                    _current.value = list[0]
+                    _state.value = PState.PLAYING
+                } else {
+                    _state.value = PState.ERROR
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _state.value = PState.ERROR
+            }
+        }
+    }
 
-            // 2. Manifest JSON Yükle
+    fun loadManifestSource() {
+        viewModelScope.launch(Dispatchers.IO) {
+            _state.value = PState.BUFFERING
             try {
                 val jsonText = fetchUrlContent(manifestUrl.value)
-                mergedList.addAll(parseManifestJson(jsonText, manifestUrl.value))
-            } catch (e: Exception) { e.printStackTrace() }
-
-            if (mergedList.isNotEmpty()) {
-                _channels.value = mergedList
-                _current.value = mergedList[0]
-                _state.value = PState.PLAYING
-            } else {
+                val list = parseManifestJson(jsonText, manifestUrl.value)
+                if (list.isNotEmpty()) {
+                    _channels.value = list
+                    _current.value = list[0]
+                    _state.value = PState.PLAYING
+                } else {
+                    _state.value = PState.ERROR
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
                 _state.value = PState.ERROR
             }
         }
@@ -80,16 +92,24 @@ class PlayerViewModel : ViewModel() {
     private fun parseM3u(m3uText: String): List<Channel> {
         val list = mutableListOf<Channel>()
         var currentName = ""
+        var currentLogo = ""
         var currentGroup = "Workers M3U"
 
         for (line in m3uText.lines()) {
             val trimmed = line.trim()
             if (trimmed.startsWith("#EXTINF:")) {
+                val logoMatch = Regex("""tvg-logo="([^"]*)"""").find(trimmed)
+                currentLogo = logoMatch?.groupValues?.get(1) ?: ""
+
+                val groupMatch = Regex("""group-title="([^"]*)"""").find(trimmed)
+                currentGroup = groupMatch?.groupValues?.get(1) ?: "Workers M3U"
+
                 val nameMatch = Regex(".*,(.*)").find(trimmed)
                 currentName = nameMatch?.groupValues?.get(1)?.trim() ?: "Kanal"
             } else if (trimmed.startsWith("http://") || trimmed.startsWith("https://")) {
-                list.add(Channel(id = list.size.toString(), name = currentName, url = trimmed, group = currentGroup))
+                list.add(Channel(id = list.size.toString(), name = currentName, url = trimmed, logo = currentLogo, group = currentGroup))
                 currentName = ""
+                currentLogo = ""
             }
         }
         return list
@@ -113,8 +133,9 @@ class PlayerViewModel : ViewModel() {
                 for (j in 0 until metas.length()) {
                     val meta = metas.getJSONObject(j)
                     val title = meta.optString("name", "Kanal")
+                    val logo = meta.optString("poster", meta.optString("logo", ""))
                     val channelId = meta.optString("id", "")
-                    list.add(Channel(id = channelId, name = title, url = "$rootUrl/stream/$type/$channelId.json", group = addonName, isAddon = true))
+                    list.add(Channel(id = channelId, name = title, url = "$rootUrl/stream/$type/$channelId.json", logo = logo, group = addonName))
                 }
             }
         } catch (e: Exception) { e.printStackTrace() }
